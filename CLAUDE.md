@@ -52,6 +52,11 @@ Ver [README.md](README.md). Resumen: Vercel importando el repo de GitHub
 
 ## Clave de API
 
-El campo "Clave de API de Anthropic" en Ajustes es opcional y sólo hace falta
-si se abre el archivo fuera del entorno donde Claude ya provee la clave. Se
-guarda en `localStorage` del propio teléfono, nunca sale de ahí.
+Deployada de forma standalone (Vercel), la app **necesita** una clave de API
+de Anthropic cargada en Ajustes — no hay ningún proxy que la provea. Sin
+clave, `callClaude()` llama a `api.anthropic.com` sin auth y falla (401). La
+clave se guarda en `localStorage` del propio teléfono y viaja directo del
+navegador a Anthropic (header `anthropic-dangerous-direct-browser-access`),
+nunca pasa por un servidor propio. Es el trade-off consciente de un PWA sin
+backend: la clave queda visible para quien tenga acceso al teléfono/DevTools,
+aceptable para una herramienta de uso personal.

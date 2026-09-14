@@ -6,12 +6,34 @@ extrae los datos, los revisás/completás y los mandás por e-mail. Es una PWA
 instalable: se usa como una app más en el celular, sin instalar nada de una
 tienda de aplicaciones.
 
+## Configurar la clave de API de Anthropic (paso obligatorio)
+
+La app llama directo desde el celular a la API de Anthropic para leer
+tarjetas y transcribir audio — no tiene backend propio que la provea, así que
+necesita su propia clave:
+
+1. Entrá a [console.anthropic.com](https://console.anthropic.com) e iniciá
+   sesión (es la consola de desarrollador, distinta de claude.ai/la app de
+   chat — si no tenés cuenta, la creás ahí mismo).
+2. Cargá un método de pago en **Settings → Billing** (la API se cobra por uso;
+   para leer tarjetas ocasionales el gasto es de centavos por lead).
+3. Andá a **Settings → API Keys → Create Key**, ponele un nombre (ej.
+   "Lead Collector") y copiá la clave que empieza con `sk-ant-...` (sólo se
+   muestra una vez).
+4. En la app, tocá el ícono de tuerca (Ajustes), pegala en **"Clave de API de
+   Anthropic"** y tocá **Guardar ajustes**.
+5. Probá sacarle una foto a una tarjeta — debería mostrar "Leyendo la
+   tarjeta…" y después completar el formulario.
+
+La clave queda guardada sólo en ese teléfono (`localStorage`) y viaja directo
+al navegador → Anthropic; no pasa por ningún servidor intermedio.
+
 ## Uso
 
 1. Abrí la app en el celular (ver URL más abajo) y agregala a la pantalla de
    inicio (ver "Instalarla" abajo).
 2. En **Ajustes** (ícono de tuerca), cargá el e-mail adonde querés que lleguen
-   los leads y, si hace falta, tu clave de API de Anthropic.
+   los leads y tu clave de API de Anthropic (ver sección de arriba).
 3. Para cada contacto: **Tarjeta** (foto o galería) o **Audio** (grabás
    contando quién es, la app lo pasa a texto y extrae los datos), o **Manual**
    si preferís tipear.

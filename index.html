@@ -337,9 +337,9 @@
       <p class="note">Cada fuente nueva que uses queda guardada acá para elegirla con un toque.</p>
     </div>
     <div class="field" style="margin-bottom:0">
-      <label for="apiKey">Clave de API de Anthropic (opcional)</label>
+      <label for="apiKey">Clave de API de Anthropic</label>
       <input id="apiKey" type="password" autocapitalize="off" autocomplete="off" placeholder="sk-ant-...">
-      <p class="note">Sólo hace falta si publicás este archivo en tu propio hosting.</p>
+      <p class="note">Necesaria para leer tarjetas y transcribir audio. Se guarda solo en este teléfono, nunca sale de acá salvo para llamar a la API de Anthropic.</p>
     </div>
     <div class="actions">
       <button class="btn btn-primary btn-sm" id="btnSaveSettings">Guardar ajustes</button>
@@ -525,7 +525,7 @@ async function callClaude(content){
   }
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST', headers,
-    body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, messages:[{ role:'user', content }] })
+    body: JSON.stringify({ model:'claude-sonnet-5', max_tokens:1000, messages:[{ role:'user', content }] })
   });
   if (!res.ok) throw new Error('El servicio respondió ' + res.status);
   const data = await res.json();
@@ -549,7 +549,9 @@ Reglas:
 
 function friendly(err){
   const m = String(err && err.message || err);
-  if (/Failed to fetch|NetworkError|401|403/i.test(m)) return 'Revisá la conexión, o cargá tu clave de API en Ajustes si abriste el archivo fuera de Claude.';
+  if (/401|403/.test(m)) return 'Anthropic rechazó la clave de API. Revisá en Ajustes que esté bien pegada (empieza con "sk-ant-") y que tenga créditos.';
+  if (/Failed to fetch|NetworkError/i.test(m)) return 'No hay conexión a internet. Este paso la necesita; probá de nuevo con señal.';
+  if (/404/.test(m)) return 'El modelo de IA no está disponible ahora mismo. Probá de nuevo en un rato.';
   return m;
 }
 
