@@ -1,39 +1,38 @@
 # Lead Collector
 
 App para capturar leads en ferias y rondas de negocios (OFFICE PACK). Sacás una
-foto de una tarjeta o grabás un audio contando el contacto, la IA de Claude
+foto de una tarjeta o grabás un audio contando el contacto, la IA de Gemini
 extrae los datos, los revisás/completás y los mandás por e-mail. Es una PWA
 instalable: se usa como una app más en el celular, sin instalar nada de una
 tienda de aplicaciones.
 
-## Configurar la clave de API de Anthropic (paso obligatorio)
+## Configurar la clave de API de Gemini (paso obligatorio, gratis)
 
-La app llama directo desde el celular a la API de Anthropic para leer
+La app llama directo desde el celular a la API de Gemini (Google) para leer
 tarjetas y transcribir audio — no tiene backend propio que la provea, así que
-necesita su propia clave:
+necesita su propia clave. Gemini tiene un nivel gratuito sin tarjeta de
+crédito, suficiente para este uso:
 
-1. Entrá a [console.anthropic.com](https://console.anthropic.com) e iniciá
-   sesión (es la consola de desarrollador, distinta de claude.ai/la app de
-   chat — si no tenés cuenta, la creás ahí mismo).
-2. Cargá un método de pago en **Settings → Billing** (la API se cobra por uso;
-   para leer tarjetas ocasionales el gasto es de centavos por lead).
-3. Andá a **Settings → API Keys → Create Key**, ponele un nombre (ej.
-   "Lead Collector") y copiá la clave que empieza con `sk-ant-...` (sólo se
-   muestra una vez).
-4. En la app, tocá el ícono de tuerca (Ajustes), pegala en **"Clave de API de
-   Anthropic"** y tocá **Guardar ajustes**.
-5. Probá sacarle una foto a una tarjeta — debería mostrar "Leyendo la
+1. Entrá a [aistudio.google.com/apikey](https://aistudio.google.com/apikey) e
+   iniciá sesión con una cuenta de Google.
+2. Tocá **Create API key** (podés crear un proyecto nuevo si te lo pide) y
+   copiá la clave (empieza con `AIzaSy...`).
+3. En la app, tocá el ícono de tuerca (Ajustes), pegala en **"Clave de API de
+   Gemini"** y tocá **Guardar ajustes**.
+4. Probá sacarle una foto a una tarjeta — debería mostrar "Leyendo la
    tarjeta…" y después completar el formulario.
 
 La clave queda guardada sólo en ese teléfono (`localStorage`) y viaja directo
-al navegador → Anthropic; no pasa por ningún servidor intermedio.
+al navegador → Gemini; no pasa por ningún servidor intermedio. El nivel
+gratuito tiene un límite de usos por día; si en algún momento aparece el
+aviso de cuota agotada, simplemente esperá y volvé a intentar más tarde.
 
 ## Uso
 
 1. Abrí la app en el celular (ver URL más abajo) y agregala a la pantalla de
    inicio (ver "Instalarla" abajo).
 2. En **Ajustes** (ícono de tuerca), cargá el e-mail adonde querés que lleguen
-   los leads y tu clave de API de Anthropic (ver sección de arriba).
+   los leads y tu clave de API de Gemini (ver sección de arriba).
 3. Para cada contacto: **Tarjeta** (foto o galería) o **Audio** (grabás
    contando quién es, la app lo pasa a texto y extrae los datos), o **Manual**
    si preferís tipear.
@@ -47,7 +46,7 @@ La cámara y el micrófono piden permiso del navegador la primera vez. Si lo
 rechazaste sin querer, la app te va a explicar cómo habilitarlo desde los
 ajustes del navegador o de la app instalada.
 
-Sacar la foto y dictar el audio necesitan conexión (usan la IA de Claude). El
+Sacar la foto y dictar el audio necesitan conexión (usan la IA de Gemini). El
 resto — completar a mano, guardar el borrador, la lista de leads y mandar por
 e-mail — funciona sin señal.
 

@@ -3,8 +3,9 @@
 Herramienta de captura de leads para OFFICE PACK, empresa B2B de Buenos Aires.
 La usa el responsable comercial desde el celular en ferias y rondas de negocios:
 saca una foto de una tarjeta o graba un audio, extrae los datos con la API de
-Anthropic (Claude), deja revisar/editar el formulario resultante y lo manda por
-e-mail (o lo guarda en una lista local para mandar varios juntos).
+Gemini (Google, nivel gratuito — decisión explícita del usuario para no sumar
+una suscripción paga), deja revisar/editar el formulario resultante y lo manda
+por e-mail (o lo guarda en una lista local para mandar varios juntos).
 
 ## Cómo está armado
 
@@ -29,8 +30,8 @@ proponerlo primero.
 
 ## Qué requiere conexión y qué no
 
-- **Necesitan internet:** la lectura de la tarjeta (foto → Claude) y el
-  dictado por voz (Web Speech API + envío del texto a Claude para extraer
+- **Necesitan internet:** la lectura de la tarjeta (foto → Gemini) y el
+  dictado por voz (Web Speech API + envío del texto a Gemini para extraer
   los campos).
 - **Funciona offline:** abrir la app, completar el formulario a mano, guardar
   el borrador y la lista de leads (`localStorage`), y el botón "Enviar por
@@ -39,7 +40,7 @@ proponerlo primero.
 
 ## Cámara y micrófono
 
-Requieren HTTPS (Netlify lo da por defecto) y permiso del navegador. Los
+Requieren HTTPS (Vercel lo da por defecto) y permiso del navegador. Los
 mensajes de error de permiso denegado (`permisoError` en `index.html`) están
 pensados para el escenario real de uso: el sitio ya deployado en su propio
 dominio, no embebido en otra app.
@@ -53,10 +54,13 @@ Ver [README.md](README.md). Resumen: Vercel importando el repo de GitHub
 ## Clave de API
 
 Deployada de forma standalone (Vercel), la app **necesita** una clave de API
-de Anthropic cargada en Ajustes — no hay ningún proxy que la provea. Sin
-clave, `callClaude()` llama a `api.anthropic.com` sin auth y falla (401). La
-clave se guarda en `localStorage` del propio teléfono y viaja directo del
-navegador a Anthropic (header `anthropic-dangerous-direct-browser-access`),
-nunca pasa por un servidor propio. Es el trade-off consciente de un PWA sin
-backend: la clave queda visible para quien tenga acceso al teléfono/DevTools,
-aceptable para una herramienta de uso personal.
+de Gemini cargada en Ajustes — no hay ningún proxy que la provea. Sin clave,
+`callGemini()` (en `index.html`) tira el error `SIN_CLAVE` antes de llamar a
+la red. La clave se guarda en `localStorage` del propio teléfono y viaja
+directo del navegador a `generativelanguage.googleapis.com` (Gemini permite
+llamadas directas desde el browser sin header especial, a diferencia de la
+API de Anthropic que se usaba antes); nunca pasa por un servidor propio. Es
+el trade-off consciente de un PWA sin backend: la clave queda visible para
+quien tenga acceso al teléfono/DevTools, aceptable para una herramienta de
+uso personal. Se eligió Gemini (`gemini-2.5-flash`) en vez de Claude
+específicamente porque tiene nivel gratuito sin tarjeta de crédito.

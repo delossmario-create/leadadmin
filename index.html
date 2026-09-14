@@ -337,9 +337,9 @@
       <p class="note">Cada fuente nueva que uses queda guardada acá para elegirla con un toque.</p>
     </div>
     <div class="field" style="margin-bottom:0">
-      <label for="apiKey">Clave de API de Anthropic</label>
-      <input id="apiKey" type="password" autocapitalize="off" autocomplete="off" placeholder="sk-ant-...">
-      <p class="note">Necesaria para leer tarjetas y transcribir audio. Se guarda solo en este teléfono, nunca sale de acá salvo para llamar a la API de Anthropic.</p>
+      <label for="apiKey">Clave de API de Gemini</label>
+      <input id="apiKey" type="password" autocapitalize="off" autocomplete="off" placeholder="AIzaSy...">
+      <p class="note">Necesaria para leer tarjetas y transcribir audio. Es gratis en aistudio.google.com/apikey. Se guarda solo en este teléfono, nunca sale de acá salvo para llamar a la API de Gemini.</p>
     </div>
     <div class="actions">
       <button class="btn btn-primary btn-sm" id="btnSaveSettings">Guardar ajustes</button>
@@ -515,21 +515,35 @@ $('fuente').addEventListener('blur', () => {
   if (t) { $('fuente').value = t; paintChips(); saveDraft(); }
 });
 
-/* ---------- Modelo ---------- */
-async function callClaude(content){
-  const headers = { 'Content-Type':'application/json' };
-  if (state.settings.apiKey) {
-    headers['x-api-key'] = state.settings.apiKey;
-    headers['anthropic-version'] = '2023-06-01';
-    headers['anthropic-dangerous-direct-browser-access'] = 'true';
-  }
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST', headers,
-    body: JSON.stringify({ model:'claude-sonnet-5', max_tokens:1000, messages:[{ role:'user', content }] })
+/* ---------- Modelo (Gemini) ---------- */
+const GEMINI_MODEL = 'gemini-2.5-flash';
+const ESQUEMA_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    nombre: { type: 'STRING' }, empresa: { type: 'STRING' }, cargo: { type: 'STRING' },
+    telefono: { type: 'STRING' }, email: { type: 'STRING' }, web: { type: 'STRING' },
+    oportunidad: { type: 'STRING' }
+  },
+  required: ['nombre','empresa','cargo','telefono','email','web','oportunidad']
+};
+async function callGemini(parts){
+  if (!state.settings.apiKey) throw new Error('SIN_CLAVE');
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL
+    + ':generateContent?key=' + encodeURIComponent(state.settings.apiKey);
+  const res = await fetch(url, {
+    method:'POST', headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts }],
+      generationConfig: { responseMimeType:'application/json', responseSchema: ESQUEMA_SCHEMA }
+    })
   });
   if (!res.ok) throw new Error('El servicio respondió ' + res.status);
   const data = await res.json();
-  return (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+  if (!data.candidates || !data.candidates.length) {
+    const razon = data.promptFeedback && data.promptFeedback.blockReason;
+    throw new Error(razon ? 'BLOQUEADO:' + razon : 'Sin respuesta del modelo');
+  }
+  return (data.candidates[0].content.parts || []).map(p => p.text || '').join('\n');
 }
 function parseJSON(raw){
   let t = String(raw).replace(/```json/gi,'').replace(/```/g,'').trim();
@@ -537,9 +551,7 @@ function parseJSON(raw){
   if (a !== -1 && b !== -1) t = t.slice(a, b+1);
   return JSON.parse(t);
 }
-const ESQUEMA = `Devolvé SOLO un objeto JSON, sin texto antes ni después, sin markdown, con exactamente estas claves:
-{"nombre":"","empresa":"","cargo":"","telefono":"","email":"","web":"","oportunidad":""}
-Reglas:
+const ESQUEMA = `Extraé los datos con estas reglas:
 - "nombre": nombre y apellido de la persona.
 - "cargo": puesto y/o área.
 - "telefono": un solo número, el celular si hay varios, con formato legible.
@@ -549,7 +561,10 @@ Reglas:
 
 function friendly(err){
   const m = String(err && err.message || err);
-  if (/401|403/.test(m)) return 'Anthropic rechazó la clave de API. Revisá en Ajustes que esté bien pegada (empieza con "sk-ant-") y que tenga créditos.';
+  if (m === 'SIN_CLAVE') return 'Falta cargar la clave de API de Gemini en Ajustes.';
+  if (/^BLOQUEADO/.test(m)) return 'Gemini no pudo procesar esto (contenido bloqueado). Probá con otra foto o audio.';
+  if (/400|403/.test(m)) return 'Gemini rechazó la clave de API. Revisá en Ajustes que esté bien pegada.';
+  if (/429/.test(m)) return 'Se agotó la cuota gratuita de Gemini por ahora. Esperá un rato y probá de nuevo.';
   if (/Failed to fetch|NetworkError/i.test(m)) return 'No hay conexión a internet. Este paso la necesita; probá de nuevo con señal.';
   if (/404/.test(m)) return 'El modelo de IA no está disponible ahora mismo. Probá de nuevo en un rato.';
   return m;
@@ -626,9 +641,9 @@ document.addEventListener('paste', async (e) => {
 async function leerTarjeta(b64){
   setStatus('Leyendo la tarjeta…', true);
   try {
-    const raw = await callClaude([
-      { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:b64 } },
-      { type:'text', text:'Esta es la foto de una tarjeta personal de negocios. Extraé los datos de contacto.\n\n' + ESQUEMA }
+    const raw = await callGemini([
+      { inline_data:{ mime_type:'image/jpeg', data:b64 } },
+      { text:'Esta es la foto de una tarjeta personal de negocios. Extraé los datos de contacto.\n\n' + ESQUEMA }
     ]);
     const d = parseJSON(raw);
     writeForm(d, true);
@@ -799,7 +814,7 @@ $('btnParse').onclick = async () => {
   if (grabando) stopRec();
   setStatus('Ordenando lo que dijiste…', true);
   try {
-    const raw = await callClaude([{ type:'text', text:
+    const raw = await callGemini([{ text:
       'Este es el relato hablado de un vendedor después de charlar con un contacto en una feria o ronda de negocios. Puede tener errores de transcripción. Extraé los datos del contacto y la oportunidad comercial.\n\nRelato:\n"""\n' + texto + '\n"""\n\n' + ESQUEMA }]);
     const d = parseJSON(raw);
     writeForm(d, true);
