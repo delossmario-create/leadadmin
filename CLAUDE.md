@@ -64,3 +64,4 @@ el trade-off consciente de un PWA sin backend: la clave queda visible para
 quien tenga acceso al teléfono/DevTools, aceptable para una herramienta de
 uso personal. Se eligió Gemini (`gemini-2.5-flash`) en vez de Claude
 específicamente porque tiene nivel gratuito sin tarjeta de crédito.
+test de webhook vercel: 2026-09-14T02:15:14Z
