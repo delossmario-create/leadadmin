@@ -46,8 +46,9 @@ dominio, no embebido en otra app.
 
 ## Despliegue
 
-Ver [README.md](README.md). Resumen: Netlify sirviendo la raíz del repo, sin
-build command (sitio estático).
+Ver [README.md](README.md). Resumen: Vercel importando el repo de GitHub
+(`delossmario-create/leadadmin`), sin build command (sitio estático). El
+`vercel.json` fuerza `no-cache` en `sw.js`/`manifest.json` a nivel CDN.
 
 ## Clave de API
 

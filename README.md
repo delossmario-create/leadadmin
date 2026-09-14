@@ -38,19 +38,21 @@ e-mail — funciona sin señal.
 
 Una vez instalada abre a pantalla completa, sin la barra del navegador.
 
-## Despliegue (Netlify)
+## Despliegue (Vercel)
 
 Es un sitio estático, sin build ni backend:
 
-- **Build command:** ninguno (dejar vacío).
-- **Publish directory:** `.` (la raíz del repo).
+1. En [vercel.com](https://vercel.com) → **Add New → Project** → importá el
+   repo de GitHub `delossmario-create/leadadmin`.
+2. Framework Preset: **Other**. **Build Command:** ninguno (dejar vacío).
+   **Output Directory:** dejar el default (la raíz del repo).
+3. Deploy. Cada push a `main` redeploya solo.
 
-Conectando el repo de GitHub a Netlify, cada push a la rama principal
-redeploya solo. Netlify sirve todo por HTTPS automáticamente, que es requisito
-para que el navegador habilite cámara y micrófono.
-
-Si preferís no usar git, también se puede arrastrar la carpeta del proyecto a
-[Netlify Drop](https://app.netlify.com/drop) para un deploy manual.
+Vercel sirve todo por HTTPS automáticamente, que es requisito para que el
+navegador habilite cámara y micrófono. El archivo [vercel.json](vercel.json)
+fuerza `Cache-Control: no-cache` en `sw.js` y `manifest.json` para que el CDN
+nunca sirva una versión vieja de esos dos archivos (el resto de la
+actualización la maneja el service worker, ver más abajo).
 
 ### Actualizaciones
 
@@ -65,6 +67,7 @@ una vez) — no hace falta desinstalar ni borrar caché a mano.
 index.html   — la app entera (HTML/CSS/JS, sin dependencias de build)
 manifest.json — metadata de instalación como PWA
 sw.js         — service worker (offline + actualización)
+vercel.json   — cabeceras de caché para el deploy en Vercel
 icons/        — íconos de la app en los tamaños que piden Android/iOS
 ```
 
