@@ -65,3 +65,5 @@ quien tenga acceso al teléfono/DevTools, aceptable para una herramienta de
 uso personal. Se eligió Gemini (`gemini-2.5-flash`) en vez de Claude
 específicamente porque tiene nivel gratuito sin tarjeta de crédito.
 test de webhook vercel: 2026-09-14T02:15:14Z
+
+test 2 webhook vercel: 2026-09-14T02:23:01Z
